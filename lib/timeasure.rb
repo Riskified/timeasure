@@ -1,4 +1,6 @@
 require 'timeasure/version'
+require 'timeasure/configuration'
+require 'timeasure/class_methods'
 
 module Timeasure
   class << self

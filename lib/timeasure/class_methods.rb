@@ -2,20 +2,20 @@ module Timeasure
   module ClassMethods
     def tracked_instance_methods(*method_names)
       method_names.each do |method_name|
-        instance_interceptor = const_get("#{self.timeasure_name}InstanceInterceptor")
+        instance_interceptor = const_get("#{timeasure_name}InstanceInterceptor")
         add_method_to_interceptor(instance_interceptor, method_name)
       end
     end
 
     def tracked_class_methods(*method_names)
       method_names.each do |method_name|
-        class_interceptor = const_get("#{self.timeasure_name}ClassInterceptor")
+        class_interceptor = const_get("#{timeasure_name}ClassInterceptor")
         add_method_to_interceptor(class_interceptor, method_name)
       end
     end
 
     def timeasure_name
-      self.name.gsub('::', '_')
+      name.gsub('::', '_')
     end
 
     private

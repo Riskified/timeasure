@@ -39,8 +39,8 @@ module Timeasure
       Module.new do
         @base_class = base_class
 
-        def self.base_class
-          @base_class
+        class << self
+          attr_reader :base_class
         end
       end
     end

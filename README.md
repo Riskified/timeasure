@@ -112,6 +112,26 @@ class Foo
 end
 ```
 
+#### 3. Notes
+
+**Compatiblity with RSpec**
+
+If you run your test suite with Timeasure installed and modules, classes and methods tracked and all works fine - hurray!
+However, due to the mechanics of Timeasure - namely, its usage of prepended modules - there exist a problem with
+**stubbing** Timeasure-tracked method (RSpec does not support stubbing methods that appear in a prepended module). To be accurate, that means that if you are tracking method `#foo`, you can not
+declare something like `allow(bar).to receive(:foo).and_return(bar)`.
+To solve that problem you can configure Timeasure's `enable_timeasure_proc` **not** to run under certain conditions.
+If you are on Rails, add the following to the initializer:
+
+```ruby
+Timeasure.configure do |configuration|
+  configuration.post_measuring_proc = lambda { !Rails.env.test? }
+end
+```  
+
+Timeasure will not come into action if the expression in the block is falsey. By default this block is truthy.
+
+
 ## Contributing
 
 1. Fork it ( https://github.com/[my-github-username]/timeasure/fork )

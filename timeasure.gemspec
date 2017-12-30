@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.email         = ['eliav@riskified.com']
   spec.summary       = 'Transparent method-level wrapper for profiling purposes'
   spec.description   = <<-DESCRIPTION
-                          Timeasure allows you to declare tracked methods to be measured
-                          transparently upon each call. Measured calls are then reported according
+                          Timeasure allows you to easily declare tracked methods to be measured
+                          transparently upon each call. Measured method calls are then reported according
                           to a configurable proc of your liking.
                        DESCRIPTION
   spec.homepage      = ''

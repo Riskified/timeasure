@@ -1,6 +1,6 @@
 # Timeasure
 
-Inspired by [Metaprogramming Ruby 2](https://pragprog.com/book/ppmetr2/metaprogramming-ruby-2) and [Hashrocket's](https://hashrocket.com/blog/posts/module-prepend-a-super-story) blog.
+Timeasure is a transparent method-level wrapper for profiling purposes developed by Riskified, Inc ([https://www.riskified.com](https://www.riskified.com/)).
 
 Timeasure allows you to declare tracked methods to be measured transparently upon each call.
 Measured calls are then reported according to a configurable proc of your liking.
@@ -15,8 +15,11 @@ Timeasure uses minimal intervention in the Ruby Object Model for tracked modules
 Hence, the degradation in performance is minimal to nonexistent, assuming your post_measuring_proc is optimized.
 It is eligible for use in production environment and for inclusion in Rails apps.
 
+Timeasure is inspired by [Metaprogramming Ruby 2](https://pragprog.com/book/ppmetr2/metaprogramming-ruby-2) and [Hashrocket's](https://hashrocket.com/blog/posts/module-prepend-a-super-story) blog.
 
-Ruby 2.0 or a later version is mandoroty since Timeasure uses `Module#prepend` introduced in Ruby 2.0.
+## Requirements
+
+Ruby 2.0 or a later version is mandatory since Timeasure uses `Module#prepend` introduced in Ruby 2.0.
 
 ## Installation
 
@@ -39,8 +42,8 @@ Or install it yourself as:
 For any tracked method, Timeasure will call its `configuration.post_measuring_proc` with 4 arguments:
 * **base_class_name**: the name of the module or class in which the tracked method is defined.
 * **method_name** : the tracked method name.
-* **t0** = `Time.now.utc` before the execution of the method
-* **t1** = `Time.now.utc` after the execution of the method
+* **t0**: `Time.now.utc` before the execution of the method
+* **t1**: `Time.now.utc` after the execution of the method
 
 In case the call to `configuration.post_measuring_proc` raised an error of any kind,
 `configuration.rescue_proc` will be called with 2 arguments:
@@ -134,7 +137,7 @@ Timeasure will not come into action if the expression in the block is falsey. By
 
 ## Contributing
 
-1. Fork it ( https://github.com/[my-github-username]/timeasure/fork )
+1. Fork it ( https://github.com/riskified/timeasure/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)

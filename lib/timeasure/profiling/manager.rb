@@ -3,7 +3,7 @@ require_relative 'reported_method'
 
 module Timeasure
   module Profiling
-    class Profiler
+    class Manager
       class << self
         def prepare
           Timeasure.configuration.reported_methods_handler_ref_set_proc.call(ReportedMethodsHandler.new)

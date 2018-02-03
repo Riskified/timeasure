@@ -2,7 +2,7 @@ require_relative 'timeasure/version'
 require_relative 'timeasure/configuration'
 require_relative 'timeasure/class_methods'
 require_relative 'timeasure/measurement'
-require_relative 'timeasure/profiling/profiler'
+require_relative 'timeasure/profiling/manager'
 
 module Timeasure
   class << self

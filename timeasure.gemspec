@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name          = 'timeasure'
   spec.version       = Timeasure::VERSION
   spec.authors       = ['Eliav Lavi']
-  spec.email         = ['eliav@riskified.com']
+  spec.email         = ['eliav@riskified.com', 'eliavlavi@gmail.com']
   spec.summary       = 'Transparent method-level wrapper for profiling purposes'
   spec.description   = <<-DESCRIPTION
                           Timeasure allows you to easily declare tracked methods to be measured

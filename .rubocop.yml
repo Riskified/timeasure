@@ -3,3 +3,9 @@ AllCops:
 
 Metrics/LineLength:
   Max: 120
+
+Documentation:
+  Enabled: false
+
+Metrics/BlockLength:
+  ExcludedMethods: ['describe', 'context', 'before']

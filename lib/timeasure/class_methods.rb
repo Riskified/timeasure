@@ -23,17 +23,9 @@ module Timeasure
     def add_method_to_interceptor(interceptor, method_name)
       interceptor.class_eval do
         define_method method_name do |*args, &block|
-          t0 = Time.now.utc
-          method_return_value = super(*args, &block)
-          t1 = Time.now.utc
-
-          begin
-            Timeasure.configuration.post_measuring_proc.call(interceptor.base_class.to_s, method_name.to_s, t0, t1)
-          rescue => e
-            Timeasure.configuration.rescue_proc.call(e, interceptor.base_class)
+          Timeasure.measure(klass_name: interceptor.klass_name.to_s, method_name: method_name.to_s) do
+            super(*args, &block)
           end
-
-          method_return_value
         end
       end
     end

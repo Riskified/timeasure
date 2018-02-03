@@ -1,6 +1,7 @@
 require 'timeasure/version'
 require 'timeasure/configuration'
 require 'timeasure/class_methods'
+require 'timeasure/measurement'
 
 module Timeasure
   class << self
@@ -24,6 +25,22 @@ module Timeasure
       base_class.singleton_class.prepend class_interceptor
     end
 
+    def measure(klass_name: nil, method_name: nil, segment: nil, metadata: nil)
+      t0 = Time.now.utc
+      block_return_value = yield if block_given?
+      t1 = Time.now.utc
+
+      begin
+        measurement = Timeasure::Measurement.new(klass_name: klass_name, method_name: method_name,
+                                                 segment: segment, metadata: metadata, t0: t0, t1: t1)
+        Timeasure.configuration.post_measuring_proc.call(measurement)
+      rescue => e
+        Timeasure.configuration.rescue_proc.call(e, klass_name)
+      end
+
+      block_return_value
+    end
+
     private
 
     def instance_interceptor_name_for(base_class)
@@ -36,10 +53,10 @@ module Timeasure
 
     def interceptor_module_for(base_class)
       Module.new do
-        @base_class = base_class
+        @klass_name = base_class
 
-        class << self
-          attr_reader :base_class
+        def self.klass_name
+          @klass_name
         end
       end
     end

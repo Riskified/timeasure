@@ -11,9 +11,9 @@ module Timeasure
         end
 
         def report(measurement)
-          reported_methods_handler.tap do |handler|
-            handler.nil? ? warn_unprepared_handler : handler.report(measurement)
-          end
+          handler = reported_methods_handler
+          warn_unprepared_handler if handler.nil?
+          handler.report(measurement)
         end
 
         def export

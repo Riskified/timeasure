@@ -1,6 +1,11 @@
 require 'timeasure'
 
 RSpec.describe Timeasure do
+
+  before(:each) do
+    Timeasure::Profiling::Manager.prepare
+  end
+
   context 'direct interface' do
     describe '.measure' do
       let(:klass_name) { double }
@@ -39,9 +44,6 @@ RSpec.describe Timeasure do
               configuration.post_measuring_proc = lambda do |measurement|
                 raise RuntimeError
               end
-
-              configuration.rescue_proc = lambda do |e, klass_name|
-              end
             end
           end
 
@@ -52,6 +54,14 @@ RSpec.describe Timeasure do
 
           it 'does not interfere with block return value' do
             expect(described_class.measure { :some_return_value }).to eq :some_return_value
+          end
+
+          after do
+            Timeasure.configure do |configuration|
+              configuration.post_measuring_proc = lambda do |measurement|
+                Timeasure::Profiling::Manager.report(measurement)
+              end
+            end
           end
         end
       end
@@ -64,16 +74,6 @@ RSpec.describe Timeasure do
     # The simplest form of handling measured methods timing is to report them to some global array.
 
     before do
-      @timeasure_results = []
-      Timeasure.configure do |configuration|
-        configuration.post_measuring_proc = lambda do |measurement|
-          @timeasure_results << { klass_name: measurement.klass_name,
-                                  method_name: measurement.method_name,
-                                  t0: measurement.t0,
-                                  t1: measurement.t1 }
-        end
-      end
-
       # The next section emulates the creation of a new class that includes Timeasure.
       # Since using the `Class.new` syntax is obligatory in test environment,
       # it has to be assigned to a constant first in order to have a name.
@@ -173,20 +173,42 @@ RSpec.describe Timeasure do
     end
 
     context 'method calling' do
-      let!(:instance) { FirstClass.new }
-      let!(:a_method_return_value) { instance.a_method }
-      let!(:a_method_with_args_return_value) { instance.a_method_with_args('arg') }
-      let!(:a_method_with_a_block_return_value) { instance.a_method_with_a_block { true ? 8 : 0 } }
+      let(:instance) { FirstClass.new }
+      let(:a_method_return_value) { instance.a_method }
+      let(:a_method_with_args_return_value) { instance.a_method_with_args('arg') }
+      let(:a_method_with_a_block_return_value) { instance.a_method_with_a_block { true ? 8 : 0 } }
 
-      it 'returns methods return values transparently' do
-        expect(a_method_return_value).to eq true
-        expect(a_method_with_args_return_value).to eq 'arg'
-        expect(a_method_with_a_block_return_value).to eq 8
+      context 'methods return value' do
+        it 'returns methods return values transparently' do
+          expect(a_method_return_value).to eq true
+          expect(a_method_with_args_return_value).to eq 'arg'
+          expect(a_method_with_a_block_return_value).to eq 8
+        end
       end
 
-      it 'executes the post_measuring_proc lambda from Timeausre.configuration' do
-        expect(@timeasure_results.count).to eq 3
-        expect(@timeasure_results).to all(be_a Hash)
+      context 'profiler' do
+        context 'reporting' do
+          it 'reports each call trough Timeasure::Profiling::Manager.report' do
+            expect(Timeasure::Profiling::Manager).to receive(:report).exactly(3).times
+            a_method_return_value
+            a_method_with_args_return_value
+            a_method_with_a_block_return_value
+          end
+        end
+
+        context 'exporting' do
+          before do
+            2.times { a_method_return_value }
+            3.times{ a_method_with_args_return_value }
+            5.times { a_method_with_a_block_return_value }
+          end
+
+          let(:export) { Timeasure::Profiling::Manager.export }
+
+          it 'exports all calls in an aggregated manner' do
+            expect(export.count).to eq 3
+          end
+        end
       end
     end
   end

@@ -7,7 +7,7 @@ module Timeasure
     class Manager
       class << self
         def prepare
-          Timeasure.configuration.reported_methods_handler_ref_set_proc.call(ReportedMethodsHandler.new)
+          Timeasure.configuration.reported_methods_handler_set_proc.call(ReportedMethodsHandler.new)
         end
 
         def report(measurement)
@@ -25,7 +25,7 @@ module Timeasure
         private
 
         def reported_methods_handler
-          Timeasure.configuration.reported_methods_handler_ref_get_proc.call
+          Timeasure.configuration.reported_methods_handler_get_proc.call
         end
 
         def warn_unprepared_handler

@@ -199,7 +199,7 @@ RSpec.describe Timeasure do
         context 'exporting' do
           before do
             2.times { a_method_return_value }
-            3.times{ a_method_with_args_return_value }
+            3.times { a_method_with_args_return_value }
             5.times { a_method_with_a_block_return_value }
           end
 

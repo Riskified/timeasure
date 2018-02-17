@@ -1,7 +1,7 @@
 module Timeasure
   module Profiling
     class ReportedMethod
-      attr_reader :klass_name, :method_name, :segment, :metadata, :runtime_sum, :call_count, :full_path, :method_path
+      attr_reader :klass_name, :method_name, :segment, :metadata, :full_path, :method_path, :runtime_sum, :call_count
 
       def initialize(measurement)
         @klass_name = measurement.klass_name

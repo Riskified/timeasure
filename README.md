@@ -1,6 +1,6 @@
 # Timeasure
 
-**What is it?**
+**What Is It?**
 
 Timeasure is a transparent method-level wrapper for profiling purposes developed by [Eliav Lavi](http://www.eliavlavi.com) & [Riskified](https://www.riskified.com/)).
 
@@ -10,6 +10,8 @@ without having to alter the code of the methods themselves.
 Timeasure allows you to declare tracked methods to be measured transparently upon each call.
 Measured calls are then reported to Timeasure's Profiler, which aggregates the measurements on the method level.
 This part is configurable and if you wish you can report measurements to another profiler of your choice.
+
+**Why Use It?**
 
 Timeasure was created in order to serve as an easy-to-use, self-contained framework for method-level profiling
 that is safe to use in production. Testing runtime in non-production environments is helpful, but there is
@@ -72,8 +74,8 @@ class Foo
 end
 ```
 
-#### 2. Define The Boundaries of the Tracked Transaction
-**Preparing For Method Tracking**
+#### 2. Define the Boundaries of the Tracked Transaction
+**Preparing for Method Tracking**
 
 The user is responsible for managing the final reporting and the clean-up of the aggregated data after each transation.
 It is recommended to prepare the profiler at the beginning of a transaction in which tracked methods exist with
@@ -168,7 +170,7 @@ It is up to the user to make use of this data, probably after calling `Timeasure
 
 ## Notes
 
-#### Compatiblity with RSpec
+#### Compatibility with RSpec
 
 If you run your test suite with Timeasure installed and modules, classes and methods tracked and all works fine - hurray!
 However, due to the mechanics of Timeasure - namely, its usage of prepended modules - there exist a problem with

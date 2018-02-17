@@ -17,6 +17,7 @@ RSpec.describe Timeasure::Profiling::Manager do
       end
 
       it 'does not call #report on reported_methods_handler' do
+        allow_any_instance_of(Logger).to receive(:warn)
         expect_any_instance_of(Timeasure::Profiling::ReportedMethodsHandler).not_to receive(:report)
         report
       end
@@ -44,6 +45,7 @@ RSpec.describe Timeasure::Profiling::Manager do
       end
 
       it 'does not call #export on reported_methods_handler' do
+        allow_any_instance_of(Logger).to receive(:warn)
         expect_any_instance_of(Timeasure::Profiling::ReportedMethodsHandler).not_to receive(:export)
         export
       end

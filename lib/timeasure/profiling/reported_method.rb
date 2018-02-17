@@ -1,13 +1,15 @@
 module Timeasure
   module Profiling
     class ReportedMethod
-      attr_reader :klass_name, :method_name, :segment, :metadata, :runtime_sum, :call_count
+      attr_reader :klass_name, :method_name, :segment, :metadata, :runtime_sum, :call_count, :full_path, :method_path
 
       def initialize(measurement)
         @klass_name = measurement.klass_name
         @method_name = measurement.method_name
         @segment = measurement.segment
         @metadata = measurement.metadata
+        @full_path = measurement.full_path
+        @method_path = measurement.method_path
 
         @runtime_sum = 0
         @call_count = 0
@@ -19,14 +21,6 @@ module Timeasure
 
       def increment_call_count
         @call_count += 1
-      end
-
-      def full_path
-        @segment.nil? ? method_path : "#{method_path}:#{@segment}"
-      end
-
-      def method_path
-        "#{@klass_name}##{@method_name}"
       end
     end
   end

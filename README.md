@@ -1,5 +1,7 @@
 # Timeasure
 
+**What is it?**
+
 Timeasure is a transparent method-level wrapper for profiling purposes developed by [Eliav Lavi](http://www.eliavlavi.com) & [Riskified](https://www.riskified.com/)).
 
 Timeasure is a Ruby gem that allows measuring the runtime of methods in production environments
@@ -13,9 +15,13 @@ Timeasure was created in order to serve as an easy-to-use, self-contained framew
 that is safe to use in production. Testing runtime in non-production environments is helpful, but there is
 great value to the knowledge gained by measuring what really goes on at real time.
 
+**What To Do With the Data?**
+
 The imagined usage of measured methods timing is to aggregate it along a certain transaction and report it to a live
 BI service such as [NewRelic Insights](https://newrelic.com/insights) or [Keen.io](https://keen.io/);
 however, different usages might prove helpful as well, such as writing the data to a database or a file.
+
+**Disclaimers**
 
 Timeasure uses minimal intervention in the Ruby Object Model for tracked modules and classes.
 It integrates well within Rails and non-Rails apps.
@@ -90,17 +96,17 @@ still hold a single `ReportedMethod` object to represent it.
 
 `ReportedMethod` allows reading the following attributes:  
 * `klass_name`: Name of the class in which the tracked method resides.
-* `method_name`: Name of the tracked method
+* `method_name`: Name of the tracked method.
 * `segment`: See [Segmented Method Tracking](#segmented-method-tracking) below.
 * `metadata`: See [Carrying Metadata](#carrying-metadata) below.
 * `method_path`: `klass_name` and `method_name` concatenated.
 * `full_path`: Same as `method_path` unless segmentation is declared,
-in which case the segment will be concatenated to the string as well. See Segmented Method Tracking below.
+in which case the segment will be concatenated to the string as well. See [Segmented Method Tracking](#segmented-method-tracking) below.
 * `runtime_sum`: The aggregated time it took the reported method in question to run across all calls.
 * `call_count`: The times the reported method in question was called across all calls.
  
 
-## Advanced and Direct Usage
+## Advanced Usage
 
 #### Segmented Method Tracking
 Timeasure was designed to separate regular code from its time measurement declaration.
@@ -133,7 +139,7 @@ end
 For such calls, Timeasure's Profiler will aggregate the data in `ReportedMethod` objects grouped by
 class, method and segment.
 
-This approach obviously violates Timeasure code and measurement-declaration separation idea,
+This approach obviously violates Timeasure's idea of separating code and measurement-declaration,
 but it allows for much more detailed investigations, if needed.
 This will result in different `ReportedMethod` object in Timeasure's Profiler for
 each combination of class, method and segment. Accordingly, such `ReportedMethod` object will include
@@ -160,7 +166,6 @@ end
 Unlike Segments, Timeasure only carries the Metadata onwards.
 It is up to the user to make use of this data, probably after calling `Timeasure::Profiling::Manager.export`.
 
-
 ## Notes
 
 #### Compatiblity with RSpec
@@ -178,13 +183,18 @@ If you are on Rails, add the following as a Rails initializer:
 require 'timeasure'
 
 Timeasure.configure do |configuration|
-  configuration.post_measuring_proc = lambda { !Rails.env.test? }
+  configuration.enable_timeasure_proc = lambda { !Rails.env.test? }
 end
 ```  
 
 Timeasure will not come into action if the expression in the block evaluates to `false`.
 By default this block evaluates to `true`.
 
+
+## Feature Requests
+
+Timeasure is open for changes and requests!
+If you have an idea, a question or some need, feel free to contact me here or at eliavlavi@gmail.com.
 
 ## Contributing
 

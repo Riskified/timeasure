@@ -74,8 +74,16 @@ RSpec.describe Timeasure do
       unless FirstClass.ancestors.include? Timeasure
         FirstClass.class_eval do
           include Timeasure
-          tracked_instance_methods :a_method, :a_method_with_args, :a_method_with_a_block
           tracked_class_methods :a_class_method
+          tracked_instance_methods :a_method, :a_method_with_args, :a_method_with_a_block
+
+          def self.a_class_method
+            false
+          end
+
+          def self.an_untracked_class_method
+            'untracked class method'
+          end
 
           def a_method
             true
@@ -92,14 +100,6 @@ RSpec.describe Timeasure do
           def an_untracked_method
             'untracked method'
           end
-
-          def self.a_class_method
-            false
-          end
-
-          def self.an_untracked_class_method
-            'untracked class method'
-          end
         end
       end
     end
@@ -112,6 +112,20 @@ RSpec.describe Timeasure do
         expect(instance.a_method_with_args('arg')).to eq 'arg'
         expect(instance.a_method_with_a_block { true ? 8 : 0 }).to eq 8
         expect(FirstClass.a_class_method).to eq false
+      end
+    end
+
+    context 'triggering Timeasure' do
+      it 'calls Timeasure.measure for tracked methods' do
+        expect(Timeasure).to receive(:measure).exactly(2).times
+        instance.a_method
+        FirstClass.a_class_method
+      end
+
+      it 'does not call Timeasure.measure for untracked methods' do
+        expect(Timeasure).not_to receive(:measure)
+        instance.an_untracked_method
+        FirstClass.an_untracked_class_method
       end
     end
   end

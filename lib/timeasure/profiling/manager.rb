@@ -12,14 +12,12 @@ module Timeasure
 
         def report(measurement)
           handler = reported_methods_handler
-          warn_unprepared_handler if handler.nil?
-          handler.report(measurement)
+          handler.nil? ? warn_unprepared_handler : handler.report(measurement)
         end
 
         def export
           handler = reported_methods_handler
-          warn_unprepared_handler if handler.nil?
-          handler.reported_methods.values || []
+          handler.nil? ? warn_unprepared_handler : handler.export
         end
 
         private

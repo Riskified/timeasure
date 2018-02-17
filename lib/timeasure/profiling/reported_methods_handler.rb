@@ -14,6 +14,10 @@ module Timeasure
         @reported_methods[measurement.full_path].increment_call_count
       end
 
+      def export
+        @reported_methods.values
+      end
+
       private
 
       def path_uninitialized_for(measurement)

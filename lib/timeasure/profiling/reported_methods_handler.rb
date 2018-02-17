@@ -1,8 +1,6 @@
 module Timeasure
   module Profiling
     class ReportedMethodsHandler
-      attr_reader :reported_methods
-
       def initialize
         @reported_methods = {}
       end

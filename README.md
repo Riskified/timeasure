@@ -1,25 +1,32 @@
 # Timeasure
 
-Timeasure is a transparent method-level wrapper for profiling purposes developed by Riskified, Inc ([https://www.riskified.com](https://www.riskified.com/)).
+Timeasure is a transparent method-level wrapper for profiling purposes developed by [Eliav Lavi](http://www.eliavlavi.com) & [Riskified](https://www.riskified.com/)).
+
+Timeasure is a Ruby gem that allows measuring the runtime of methods in production environments
+without having to alter the code of the methods themselves.
 
 Timeasure allows you to declare tracked methods to be measured transparently upon each call.
-Measured calls are then reported according to a configurable proc of your liking.
+Measured calls are then reported to Timeasure's Profiler, which aggregates the measurements on the method level.
+This part is configurable and if you wish you can report measurements to another profiler of your choice.
 
-Timeasure was created in order to serve as an easy-to-use, self-contained framework for method-level profiling.
+Timeasure was created in order to serve as an easy-to-use, self-contained framework for method-level profiling
+that is safe to use in production. Testing runtime in non-production environments is helpful, but there is
+great value to the knowledge gained by measuring what really goes on at real time.
 
 The imagined usage of measured methods timing is to aggregate it along a certain transaction and report it to a live
-BI service such as NewRelic insights; however, different usages might prove helpful as well,
-such as writing the data to a database or a file.
+BI service such as [NewRelic Insights](https://newrelic.com/insights) or [Keen.io](https://keen.io/);
+however, different usages might prove helpful as well, such as writing the data to a database or a file.
 
 Timeasure uses minimal intervention in the Ruby Object Model for tracked modules and classes.
-Hence, the degradation in performance is minimal to nonexistent, assuming your post_measuring_proc is optimized.
-It is eligible for use in production environment and for inclusion in Rails apps.
+It integrates well within Rails and non-Rails apps.
 
-Timeasure is inspired by [Metaprogramming Ruby 2](https://pragprog.com/book/ppmetr2/metaprogramming-ruby-2) and [Hashrocket's](https://hashrocket.com/blog/posts/module-prepend-a-super-story) blog.
+Timeasure is inspired by [Metaprogramming Ruby 2](https://pragprog.com/book/ppmetr2/metaprogramming-ruby-2)
+by [Paolo Perrotta](https://twitter.com/nusco)
+and by [this](https://hashrocket.com/blog/posts/module-prepend-a-super-story) blog post by Hashrocket.
 
 ## Requirements
 
-Ruby 2.0 or a later version is mandatory since Timeasure uses `Module#prepend` introduced in Ruby 2.0.
+Ruby 2.0 or a later version is mandatory. (Timeasure uses `Module#prepend` introduced in Ruby 2.0.)
 
 ## Installation
 
@@ -36,70 +43,14 @@ Or install it yourself as:
     $ gem install timeasure
 
 ## Usage
-
-#### 1. Configure Timeasure
-
-For any tracked method, Timeasure will call its `configuration.post_measuring_proc` with 4 arguments:
-* **base_class_name**: the name of the module or class in which the tracked method is defined.
-* **method_name** : the tracked method name.
-* **t0**: `Time.now.utc` before the execution of the method
-* **t1**: `Time.now.utc` after the execution of the method
-
-In case the call to `configuration.post_measuring_proc` raised an error of any kind,
-`configuration.rescue_proc` will be called with 2 arguments:
-* **e**: the rescued error.
-* **base_class**: the name of the module or class in which the tracked method is defined.
-
-Since Timeasure is a general purpose gem, it is up to the user to define the desired behaviour upon measurement.
-The way to do so is by calling `Timeasure.configure` with a configuration code block (see example in the following part).
-Normally you should do this part just once and forget about it.
-
-**In a Rails App**
-
-If you are using Rails, the easiest way to configure Timeasure is by adding an initializer to
-*config/initializers* under your Rails app root directory.
-Create a new *timeasure.rb* file in that directory. This file will execute upon Rails' initialization.
-
-A possible content for this initializer:
-```ruby
-require 'timeasure'
- 
-Timeasure.configure do |configuration|
-  configuration.post_measuring_proc = lambda do |base_class_name, method_name, t0, t1|
-    SomeMonitoringClass.report_method_timing(base_class_name, method_name, t0, t1)
-  end
- 
-  configuration.rescue_proc = lambda do |e, base_class|
-    Rails.logger.error "Timeasure failed upon calling configuration.post_measuring_proc for class #{base_class}.
-    Error: #{e}"
-  end
-end
-``` 
-
-The above assumes the existence of a service class named `SomeMonitoringClass`
-which responds to `report_method_timing`.
-It is advised to employ very light code as post_measuring_proc since this code will run
-after each call to a tracked method.
-
-The best practice would be to have a simple class that simply registers measurements during the course of a certain transaction;
-when possible (i.e. once the transaction is finished), process this data in any desired way
-(such as sending it to NewRelic Insights as events).  
-
-**In a Non-Rails App**
-
-If you are incorporating Timeasure in a non-Rails app, you need to find the equivalent of Rails' initializers
-and follow the same ideas as in the former section. 
-
-#### 2. Include Timeasure in Modules and Classes
-
-Once configured, Timeasure is ready to be used in modules and classes.
-This part is easy as a pie. Simply include the Timeasure module in the class and declare the desired methods to track:
+#### 1. Include Timeasure in Modules and Classes
+Simply include the Timeasure module in any class or module and declare the desired methods to track:
 
 ```ruby
 class Foo
   include Timeasure
   tracked_class_methods :bar
-  tracked_instance_methods :baz, :another_baz
+  tracked_instance_methods :baz, :qux
   
   def self.bar
     # some class-level stuff that can benefit from measuring runtime...
@@ -109,30 +60,130 @@ class Foo
     # some instance-level stuff that can benefit from measuring runtime...
   end
   
-  def another_baz
+  def qux
     # some other instance-level stuff that can benefit from measuring runtime...
   end
 end
 ```
 
-#### 3. Notes
+#### 2. Define The Boundaries of the Tracked Transaction
+**Preparing For Method Tracking**
 
-**Compatiblity with RSpec**
+The user is responsible for managing the final reporting and the clean-up of the aggregated data after each transation.
+It is recommended to prepare the profiler at the beginning of a transaction in which tracked methods exist with
+
+```ruby
+Timeasure::Profiling::Manager.prepare
+```
+and to re-prepare it again at the end of it in order to ensure a "clean slate" -
+after you have handled the aggregated data in some way.
+
+**Getting Hold of the Data**
+
+In order to get hold of the reported methods data, use 
+```ruby
+Timeasure::Profiling::Manager.export
+````
+This will return an array of `ReportedMethod`s. Each `ReportedMethod` object holds the aggregated timing data per
+each tracked method call. This means that no matter how many times you call a tracked method, Timeasure's Profiler will
+still hold a single `ReportedMethod` object to represent it.
+
+`ReportedMethod` allows reading the following attributes:  
+* `klass_name`: Name of the class in which the tracked method resides.
+* `method_name`: Name of the tracked method
+* `segment`: See [Segmented Method Tracking](#segmented-method-tracking) below.
+* `metadata`: See [Carrying Metadata](#carrying-metadata) below.
+* `method_path`: `klass_name` and `method_name` concatenated.
+* `full_path`: Same as `method_path` unless segmentation is declared,
+in which case the segment will be concatenated to the string as well. See Segmented Method Tracking below.
+* `runtime_sum`: The aggregated time it took the reported method in question to run across all calls.
+* `call_count`: The times the reported method in question was called across all calls.
+ 
+
+## Advanced and Direct Usage
+
+#### Segmented Method Tracking
+Timeasure was designed to separate regular code from its time measurement declaration.
+This is achieved by Timeasure's class macros `tracked_class_methods` and `tracked_instance_methods`.
+Sometimes, however, the need for additional data might arise. Imagine this method:
+
+```ruby
+class Foo
+  def bar(baz)
+    # some stuff that can benefit from measuring runtime
+    # yet its runtime is also highly affected by the value of baz...
+  end
+end
+```
+
+We've seen how Timeasure makes it easy to measure the `bar` method.
+However, if we wish to segment each call by the value of `baz`,
+we may use Timeasure's direct interface and send this value as a **segment**:
+
+```ruby
+class Foo
+  def bar(baz)
+    Timeasure.measure(klass_name: 'Foo', method_name: 'bar', segment: { baz: baz }) do
+      # the code to be measured
+    end
+  end
+end
+```
+
+For such calls, Timeasure's Profiler will aggregate the data in `ReportedMethod` objects grouped by
+class, method and segment.
+
+This approach obviously violates Timeasure code and measurement-declaration separation idea,
+but it allows for much more detailed investigations, if needed.
+This will result in different `ReportedMethod` object in Timeasure's Profiler for
+each combination of class, method and segment. Accordingly, such `ReportedMethod` object will include
+these three elements, concatenated, as the value for `ReportedMethod#full_path`. 
+
+#### Carrying Metadata
+This feature was developed in order to complement the segmented method tracking.
+
+Sometimes carrying data with measurement that does not define a segment might be needed.
+For example, assuming we save all our `ReportedMethod`s to some table called `reported_methods`,
+we might want to supply a custom table name for specific measurements.
+This might be achieved by using `metadata`:
+ 
+```ruby
+class Foo
+  def bar
+    Timeasure.measure(klass_name: 'Foo', method_name: 'bar', metadata: { table_name: 'my_custom_table' }) do
+      # the code to be measured
+    end
+  end
+end
+```
+
+Unlike Segments, Timeasure only carries the Metadata onwards.
+It is up to the user to make use of this data, probably after calling `Timeasure::Profiling::Manager.export`.
+
+
+## Notes
+
+#### Compatiblity with RSpec
 
 If you run your test suite with Timeasure installed and modules, classes and methods tracked and all works fine - hurray!
 However, due to the mechanics of Timeasure - namely, its usage of prepended modules - there exist a problem with
-**stubbing** Timeasure-tracked method (RSpec does not support stubbing methods that appear in a prepended module). To be accurate, that means that if you are tracking method `#foo`, you can not
-declare something like `allow(bar).to receive(:foo).and_return(bar)`.
+**stubbing** Timeasure-tracked method (RSpec does not support stubbing methods that appear in a prepended module).
+To be accurate, that means that if you are tracking method `#foo`, you can not
+declare something like `allow(bar).to receive(:foo).and_return(bar)`. Your specs will refuse to run in this case.
 To solve that problem you can configure Timeasure's `enable_timeasure_proc` **not** to run under certain conditions.
-If you are on Rails, add the following to the initializer:
+
+If you are on Rails, add the following as a Rails initializer:
 
 ```ruby
+require 'timeasure'
+
 Timeasure.configure do |configuration|
   configuration.post_measuring_proc = lambda { !Rails.env.test? }
 end
 ```  
 
-Timeasure will not come into action if the expression in the block is falsey. By default this block is truthy.
+Timeasure will not come into action if the expression in the block evaluates to `false`.
+By default this block evaluates to `true`.
 
 
 ## Contributing

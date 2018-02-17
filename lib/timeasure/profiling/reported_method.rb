@@ -3,11 +3,11 @@ module Timeasure
     class ReportedMethod
       attr_reader :klass_name, :method_name, :segment, :metadata, :runtime_sum, :call_count
 
-      def initialize(klass_name:, method_name:, segment:, metadata:)
-        @klass_name = klass_name
-        @method_name = method_name
-        @segment = segment
-        @metadata = metadata
+      def initialize(measurement)
+        @klass_name = measurement.klass_name
+        @method_name = measurement.method_name
+        @segment = measurement.segment
+        @metadata = measurement.metadata
 
         @runtime_sum = 0
         @call_count = 0

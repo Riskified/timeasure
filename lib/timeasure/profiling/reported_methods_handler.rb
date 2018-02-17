@@ -25,10 +25,7 @@ module Timeasure
       end
 
       def initialize_path_for(measurement)
-        @reported_methods[measurement.full_path] = ReportedMethod.new(klass_name: measurement.klass_name,
-                                                                      method_name: measurement.method_name,
-                                                                      segment: measurement.segment,
-                                                                      metadata: measurement.metadata)
+        @reported_methods[measurement.full_path] = ReportedMethod.new(measurement)
       end
     end
   end

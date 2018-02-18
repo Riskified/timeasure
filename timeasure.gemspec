@@ -9,9 +9,8 @@ Gem::Specification.new do |spec|
   spec.email         = ['eliav@riskified.com', 'eliavlavi@gmail.com']
   spec.summary       = 'Transparent method-level wrapper for profiling purposes'
   spec.description   = <<-DESCRIPTION
-                          Timeasure allows you to easily declare tracked methods to be measured
-                          transparently upon each call. Measured method calls are then reported according
-                          to a configurable proc of your liking.
+                          Timeasure is a Ruby gem that allows measuring the runtime of methods
+                          without having to alter the code of the methods themselves.
                        DESCRIPTION
   spec.homepage      = 'https://github.com/riskified/timeasure'
   spec.license       = 'MIT'

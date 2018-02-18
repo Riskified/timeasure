@@ -32,7 +32,7 @@ module Timeasure
       t1 = Time.now.utc
 
       begin
-        measurement = Timeasure::Measurement.new(klass_name: klass_name, method_name: method_name,
+        measurement = Timeasure::Measurement.new(klass_name: klass_name.to_s, method_name: method_name.to_s,
                                                  segment: segment, metadata: metadata, t0: t0, t1: t1)
         Timeasure.configuration.post_measuring_proc.call(measurement)
       rescue => e

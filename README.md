@@ -1,8 +1,10 @@
+[![Gem Version](https://badge.fury.io/rb/timeasure.svg)](https://badge.fury.io/rb/timeasure)
+
 # Timeasure
 
 **What Is It?**
 
-Timeasure is a transparent method-level wrapper for profiling purposes developed by [Eliav Lavi](http://www.eliavlavi.com) & [Riskified](https://www.riskified.com/)).
+Timeasure is a transparent method-level wrapper for profiling purposes developed by [Eliav Lavi](http://www.eliavlavi.com) & [Riskified](https://www.riskified.com/).
 
 Timeasure is a Ruby gem that allows measuring the runtime of methods in production environments
 without having to alter the code of the methods themselves.

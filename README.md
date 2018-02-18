@@ -4,7 +4,7 @@
 
 **What Is It?**
 
-Timeasure is a transparent method-level wrapper for profiling purposes developed by [Eliav Lavi](http://www.eliavlavi.com) & [Riskified](https://www.riskified.com/).
+Timeasure is a transparent method-level wrapper for profiling purposes. See a live example [right here!](https://timeasure-demo.herokuapp.com/)
 
 Timeasure is a Ruby gem that allows measuring the runtime of methods in production environments
 without having to alter the code of the methods themselves.
@@ -25,7 +25,7 @@ The imagined usage of measured methods timing is to aggregate it along a certain
 BI service such as [NewRelic Insights](https://newrelic.com/insights) or [Keen.io](https://keen.io/);
 however, different usages might prove helpful as well, such as writing the data to a database or a file.
 
-**Disclaimers**
+**General Notes**
 
 Timeasure uses minimal intervention in the Ruby Object Model for tracked modules and classes.
 It integrates well within Rails and non-Rails apps.
@@ -33,6 +33,8 @@ It integrates well within Rails and non-Rails apps.
 Timeasure is inspired by [Metaprogramming Ruby 2](https://pragprog.com/book/ppmetr2/metaprogramming-ruby-2)
 by [Paolo Perrotta](https://twitter.com/nusco)
 and by [this](https://hashrocket.com/blog/posts/module-prepend-a-super-story) blog post by Hashrocket.
+
+Timeasure is developed and maintained by [Eliav Lavi](http://www.eliavlavi.com) & [Riskified](https://www.riskified.com/).
 
 ## Requirements
 
@@ -111,7 +113,6 @@ in which case the segment will be concatenated to the string as well. See [Segme
  
 
 ## Advanced Usage
-
 #### Segmented Method Tracking
 Timeasure was designed to separate regular code from its time measurement declaration.
 This is achieved by Timeasure's class macros `tracked_class_methods` and `tracked_instance_methods`.
@@ -171,7 +172,6 @@ Unlike Segments, Timeasure only carries the Metadata onwards.
 It is up to the user to make use of this data, probably after calling `Timeasure::Profiling::Manager.export`.
 
 ## Notes
-
 #### Compatibility with RSpec
 
 If you run your test suite with Timeasure installed and modules, classes and methods tracked and all works fine - hurray!

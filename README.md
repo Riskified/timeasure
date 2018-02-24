@@ -1,4 +1,5 @@
 [![Gem Version](https://badge.fury.io/rb/timeasure.svg)](https://badge.fury.io/rb/timeasure)
+[![Maintainability](https://api.codeclimate.com/v1/badges/0ceacd5b50b0cd45fb8f/maintainability)](https://codeclimate.com/github/Riskified/timeasure/maintainability)
 
 # Timeasure
 

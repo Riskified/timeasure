@@ -78,6 +78,54 @@ class Foo
   end
 end
 ```
+**An Important Note Regarding Private Methods**
+
+Timeasure allows the tracking of private methods as long as they are defined by a  scoped `private` declaration
+and **not** by an inline one. For example, this would work:
+
+```ruby
+class Foo
+  include Timeasure
+  tracked_class_methods :bar
+  tracked_instance_methods :baz
+  
+  class << self
+    
+    private
+    
+    def bar
+      # some class-level stuff that can benefit from measuring runtime...
+    end
+  end 
+ 
+  private
+    
+  def baz
+    # some instance-level stuff that can benefit from measuring runtime...
+  end
+end
+``` 
+
+But this will not:
+
+ ```ruby
+ class Foo
+   include Timeasure
+   tracked_class_methods :bar
+   tracked_instance_methods :baz
+   
+   private_class_method def self.bar
+     # some class-level stuff that can benefit from measuring runtime...
+   end
+     
+   private def baz
+     # some instance-level stuff that can benefit from measuring runtime...
+   end
+ end
+ ```
+
+This derives from strange behaviour of Ruby's prepended modules. This is a known issue which hopefully will be solved soon.
+If you have ideas about that, your [contribution](#contributing) is welcome, of course! 
 
 #### 2. Define the Boundaries of the Tracked Transaction
 **Preparing for Method Tracking**

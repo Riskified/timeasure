@@ -65,53 +65,122 @@ RSpec.describe Timeasure do
 
 
   context 'DSL interface' do
-    before do
+    before(:all) do
       # The next section emulates the creation of a new class that includes Timeasure.
       # Since using the `Class.new` syntax is obligatory in test environment,
       # it has to be assigned to a constant first in order to have a name.
 
       FirstClass ||= Class.new
-      unless FirstClass.ancestors.include? Timeasure
-        FirstClass.class_eval do
-          include Timeasure
-          tracked_class_methods :a_class_method
-          tracked_instance_methods :a_method, :a_method_with_args, :a_method_with_a_block
+      FirstClass.class_eval do
+        include Timeasure
+        tracked_class_methods :a_class_method
+        tracked_instance_methods :a_method, :a_method_with_args, :a_method_with_a_block
 
-          def self.a_class_method
-            false
-          end
 
-          def self.an_untracked_class_method
-            'untracked class method'
-          end
-
-          def a_method
-            true
-          end
-
-          def a_method_with_args(arg)
-            arg
-          end
-
-          def a_method_with_a_block(&block)
-            yield
-          end
-
-          def an_untracked_method
-            'untracked method'
-          end
+        def self.a_class_method
+          false
         end
+
+        def self.an_untracked_class_method
+          'untracked class method'
+        end
+
+        def a_method
+          true
+        end
+
+        def a_method_with_args(arg)
+          arg
+        end
+
+        def a_method_with_a_block(&block)
+          yield
+        end
+
+        def an_untracked_method
+          'untracked method'
+        end
+
       end
     end
 
     let(:instance) { FirstClass.new }
 
     context 'methods return value' do
-      it 'returns methods return values transparently' do
-        expect(instance.a_method).to eq true
-        expect(instance.a_method_with_args('arg')).to eq 'arg'
-        expect(instance.a_method_with_a_block { true ? 8 : 0 }).to eq 8
-        expect(FirstClass.a_class_method).to eq false
+      context 'public methods' do
+        it 'returns methods return values transparently' do
+          expect(instance.a_method).to eq true
+          expect(instance.a_method_with_args('arg')).to eq 'arg'
+          expect(instance.a_method_with_a_block { true ? 8 : 0 }).to eq 8
+          expect(FirstClass.a_class_method).to eq false
+        end
+      end
+
+      context 'private methods' do
+        before(:all) do
+          FirstClass.class_eval do
+            tracked_class_methods :a_class_method_that_calls_a_private_method,
+                                  :a_private_class_method, :a_private_class_method_in_an_unsupported_way,
+                                  :a_class_method_that_calls_a_private_class_method_in_an_unsupported_way
+            tracked_instance_methods :a_method_that_calls_a_private_method, :a_private_method,
+                                     :a_method_that_calls_a_private_method_in_an_unsupported_way,
+                                     :a_private_method_in_an_unsupported_way
+
+            class << self
+              def a_class_method_that_calls_a_private_method
+                a_private_class_method
+              end
+
+              private
+
+              def a_private_class_method
+                :class_private_stuff
+              end
+            end
+
+            def self.a_class_method_that_calls_a_private_class_method_in_an_unsupported_way
+              a_private_class_method_in_an_unsupported_way
+            end
+
+            private_class_method def self.a_private_class_method_in_an_unsupported_way
+              :unsupported_class_private_stuff
+            end
+
+            def a_method_that_calls_a_private_method
+              a_private_method
+            end
+
+            def a_method_that_calls_a_private_method_in_an_unsupported_way
+              a_private_method_in_an_unsupported_way
+            end
+
+            private def a_private_method_in_an_unsupported_way
+              :unsupported_private_stuff
+            end
+
+            private
+
+            def a_private_method
+              :instance_private_stuff
+            end
+          end
+        end
+
+        context 'scope private visibility declarations' do
+          it 'returns calling method return value transparently' do
+            expect(FirstClass.a_class_method_that_calls_a_private_method).to eq :class_private_stuff
+            expect(instance.a_method_that_calls_a_private_method).to eq :instance_private_stuff
+          end
+        end
+
+        context 'inline private visibility declaration' do
+          it 'raises an error' do
+            expect { FirstClass.a_class_method_that_calls_a_private_class_method_in_an_unsupported_way }
+                .to raise_error NoMethodError
+            expect { instance.a_method_that_calls_a_private_method_in_an_unsupported_way }
+                .to raise_error NoMethodError
+          end
+        end
       end
     end
 

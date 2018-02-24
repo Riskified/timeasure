@@ -1,15 +1,15 @@
 module Timeasure
   module ClassMethods
     def tracked_instance_methods(*method_names)
+      instance_interceptor = const_get("#{timeasure_name}InstanceInterceptor")
       method_names.each do |method_name|
-        instance_interceptor = const_get("#{timeasure_name}InstanceInterceptor")
         add_method_to_interceptor(instance_interceptor, method_name)
       end
     end
 
     def tracked_class_methods(*method_names)
+      class_interceptor = const_get("#{timeasure_name}ClassInterceptor")
       method_names.each do |method_name|
-        class_interceptor = const_get("#{timeasure_name}ClassInterceptor")
         add_method_to_interceptor(class_interceptor, method_name)
       end
     end

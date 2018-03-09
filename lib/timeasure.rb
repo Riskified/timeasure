@@ -27,9 +27,9 @@ module Timeasure
     end
 
     def measure(klass_name: nil, method_name: nil, segment: nil, metadata: nil)
-      t0 = Time.now.utc
+      t0 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       block_return_value = yield if block_given?
-      t1 = Time.now.utc
+      t1 = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       begin
         measurement = Timeasure::Measurement.new(klass_name: klass_name.to_s, method_name: method_name.to_s,

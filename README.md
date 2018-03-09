@@ -39,7 +39,7 @@ Timeasure is developed and maintained by [Eliav Lavi](http://www.eliavlavi.com) 
 
 ## Requirements
 
-Ruby 2.0 or a later version is mandatory. (Timeasure uses `Module#prepend` introduced in Ruby 2.0.)
+Ruby 2.1 or a later version is mandatory. (Timeasure uses `Module#prepend` introduced in Ruby 2.0 and `Process::CLOCK_MONOTONIC` introduced in Ruby 2.1.)
 
 ## Installation
 

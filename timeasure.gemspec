@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^spec/})
   spec.require_paths = ['lib', 'lib/timeasure', 'lib/timeasure/profiling']
 
-  spec.required_ruby_version = '>= 2.0'
+  spec.required_ruby_version = '>= 2.1'
   spec.add_development_dependency 'bundler', '~> 1.6'
   spec.add_development_dependency 'coveralls'
   spec.add_development_dependency 'rake', '~> 12.0'

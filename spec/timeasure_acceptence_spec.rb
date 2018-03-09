@@ -65,12 +65,12 @@ RSpec.describe Timeasure do
 
 
   context 'DSL interface' do
-    before(:all) do
+    before(:context) do
       # The next section emulates the creation of a new class that includes Timeasure.
       # Since using the `Class.new` syntax is obligatory in test environment,
       # it has to be assigned to a constant first in order to have a name.
 
-      FirstClass ||= Class.new
+      FirstClass = Class.new
       FirstClass.class_eval do
         include Timeasure
         tracked_class_methods :a_class_method
@@ -106,7 +106,7 @@ RSpec.describe Timeasure do
 
     let(:instance) { FirstClass.new }
 
-    context 'methods return value' do
+    context 'method calling' do
       context 'public methods' do
         it 'returns methods return values transparently' do
           expect(instance.a_method).to eq true
@@ -117,68 +117,109 @@ RSpec.describe Timeasure do
       end
 
       context 'private methods' do
-        before(:all) do
-          FirstClass.class_eval do
-            tracked_class_methods :a_class_method_that_calls_a_private_method,
-                                  :a_private_class_method, :a_private_class_method_in_an_unsupported_way,
-                                  :a_class_method_that_calls_a_private_class_method_in_an_unsupported_way
-            tracked_instance_methods :a_method_that_calls_a_private_method, :a_private_method,
-                                     :a_method_that_calls_a_private_method_in_an_unsupported_way,
-                                     :a_private_method_in_an_unsupported_way
+        # The whole class definition repeats between the two context since there is significance to the fact
+        # that the tracked methods declaration appears before the actual methods are defined.
 
-            class << self
-              def a_class_method_that_calls_a_private_method
-                a_private_class_method
+        context 'when declaration is proper' do
+          before(:context) do
+            FirstClass.class_eval do
+              tracked_class_methods :a_class_method_that_calls_private_methods
+              tracked_private_class_methods :a_scoped_private_class_method, :an_inline_private_class_method
+              tracked_instance_methods :a_method_that_calls_private_methods
+              tracked_private_instance_methods :a_scoped_private_method, :an_inline_private_method
+
+              class << self
+                def a_class_method_that_calls_private_methods
+                  a_scoped_private_class_method
+                  an_inline_private_class_method
+                end
+
+                private
+
+                def a_scoped_private_class_method
+                  :class_private_stuff
+                end
+              end
+
+              private_class_method def self.an_inline_private_class_method
+                                     :more_class_private_stuff
+                                   end
+
+              def a_method_that_calls_private_methods
+                a_scoped_private_method
+                an_inline_private_method
+              end
+
+              private def a_scoped_private_method
+                :instance_private_stuff
               end
 
               private
 
-              def a_private_class_method
-                :class_private_stuff
+              def an_inline_private_method
+                :more_instance_private_stuff
               end
             end
+          end
 
-            def self.a_class_method_that_calls_a_private_class_method_in_an_unsupported_way
-              a_private_class_method_in_an_unsupported_way
-            end
+          it 'returns methods return values transparently' do
+            expect(FirstClass.a_class_method_that_calls_private_methods).to eq(:more_class_private_stuff)
+            expect(instance.a_method_that_calls_private_methods).to eq(:more_instance_private_stuff)
+          end
 
-            private_class_method def self.a_private_class_method_in_an_unsupported_way
-              :unsupported_class_private_stuff
-            end
-
-            def a_method_that_calls_a_private_method
-              a_private_method
-            end
-
-            def a_method_that_calls_a_private_method_in_an_unsupported_way
-              a_private_method_in_an_unsupported_way
-            end
-
-            private def a_private_method_in_an_unsupported_way
-              :unsupported_private_stuff
-            end
-
-            private
-
-            def a_private_method
-              :instance_private_stuff
-            end
+          it 'keeps private methods as private' do
+            expect { FirstClass.a_scoped_private_class_method }.to raise_error(NoMethodError)
+            expect { FirstClass.an_inline_private_class_method }.to raise_error(NoMethodError)
+            expect { instance.a_scoped_private_instance_method }.to raise_error(NoMethodError)
+            expect { instance.an_inline_private_instance_method }.to raise_error(NoMethodError)
           end
         end
 
-        context 'scope private visibility declarations' do
-          it 'returns calling method return value transparently' do
-            expect(FirstClass.a_class_method_that_calls_a_private_method).to eq :class_private_stuff
-            expect(instance.a_method_that_calls_a_private_method).to eq :instance_private_stuff
-          end
-        end
+        context 'when declaration is improper' do
+          before do
+            FirstClass.class_eval do
+              tracked_class_methods :a_class_method_that_calls_private_methods, :a_scoped_private_class_method,
+                                    :an_inline_private_class_method
+              tracked_instance_methods :a_method_that_calls_private_methods, :a_scoped_private_method,
+                                       :an_inline_private_method
 
-        context 'inline private visibility declaration' do
-          it 'raises an error' do
-            expect { FirstClass.a_class_method_that_calls_a_private_class_method_in_an_unsupported_way }
-                .to raise_error NoMethodError
-            expect { instance.a_method_that_calls_a_private_method_in_an_unsupported_way }
-                .to raise_error NoMethodError
+              class << self
+                def a_class_method_that_calls_private_methods
+                  a_scoped_private_class_method
+                  an_inline_private_class_method
+                end
+
+                private
+
+                def a_scoped_private_class_method
+                  :class_private_stuff
+                end
+              end
+
+              private_class_method def self.an_inline_private_class_method
+                                     :more_class_private_stuff
+                                   end
+
+              def a_method_that_calls_private_methods
+                a_scoped_private_method
+                an_inline_private_method
+              end
+
+              private def a_scoped_private_method
+                :instance_private_stuff
+              end
+
+              private
+
+              def an_inline_private_method
+                :more_instance_private_stuff
+              end
+            end
+          end
+
+          it 'raises NoMethodError' do
+            expect { FirstClass.a_class_method_that_calls_private_methods }.to raise_error(NoMethodError)
+            expect { instance.a_method_that_calls_private_methods }.to raise_error(NoMethodError)
           end
         end
       end

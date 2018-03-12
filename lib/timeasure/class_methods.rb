@@ -1,17 +1,25 @@
 module Timeasure
   module ClassMethods
     def tracked_instance_methods(*method_names)
-      instance_interceptor = const_get("#{timeasure_name}InstanceInterceptor")
       method_names.each do |method_name|
         add_method_to_interceptor(instance_interceptor, method_name)
       end
     end
 
     def tracked_class_methods(*method_names)
-      class_interceptor = const_get("#{timeasure_name}ClassInterceptor")
       method_names.each do |method_name|
         add_method_to_interceptor(class_interceptor, method_name)
       end
+    end
+
+    def tracked_private_instance_methods(*method_names)
+      tracked_instance_methods(*method_names)
+      method_names.each { |method_name| privatize_interceptor_method(instance_interceptor, method_name) }
+    end
+
+    def tracked_private_class_methods(*method_names)
+      tracked_class_methods(*method_names)
+      method_names.each { |method_name| privatize_interceptor_method(class_interceptor, method_name) }
     end
 
     def timeasure_name
@@ -28,6 +36,18 @@ module Timeasure
           end
         end
       end
+    end
+
+    def privatize_interceptor_method(interceptor, method_name)
+      interceptor.class_eval { private method_name }
+    end
+
+    def instance_interceptor
+      const_get("#{timeasure_name}InstanceInterceptor")
+    end
+
+    def class_interceptor
+      const_get("#{timeasure_name}ClassInterceptor")
     end
   end
 end

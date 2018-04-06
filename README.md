@@ -259,6 +259,18 @@ end
 Timeasure will not come into action if the expression in the block evaluates to `false`.
 By default this block evaluates to `true`.
 
+In case you are loading files manually (probably not on Rails), you can add this to *spec_helper.rb*:
+
+```ruby
+RSpec.configure do |config|
+  config.before(:suite) do
+    Timeasure.configure do |configuration|
+      configuration.enable_timeasure_proc = lambda { false }
+    end
+  end
+end
+``` 
+
 
 ## Feature Requests
 

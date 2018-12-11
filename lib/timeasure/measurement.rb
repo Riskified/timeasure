@@ -12,15 +12,15 @@ module Timeasure
     end
 
     def runtime_in_milliseconds
-      (@t1 - @t0) * 1000
+      @runtime_in_milliseconds ||= (@t1 - @t0) * 1000
     end
 
     def full_path
-      @segment.nil? ? method_path : "#{method_path}:#{@segment}"
+      @full_path ||= @segment.nil? ? method_path : "#{method_path}:#{@segment}"
     end
 
     def method_path
-      "#{@klass_name}##{@method_name}"
+      @method_path ||= "#{@klass_name}##{@method_name}"
     end
   end
 end
